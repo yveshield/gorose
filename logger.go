@@ -2,6 +2,7 @@ package gorose
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type LogLevel uint
 
 const (
 	// LOG_SQL ...
-	LOG_SQL 	LogLevel = iota
+	LOG_SQL LogLevel = iota
 	// LOG_SLOW ...
 	LOG_SLOW
 	// LOG_ERROR ...
@@ -32,8 +33,8 @@ func (l LogLevel) String() string {
 
 // LogOption ...
 type LogOption struct {
-	FilePath     	string
-	EnableSqlLog 	bool
+	FilePath     string
+	EnableSqlLog bool
 	// 是否记录慢查询, 默认0s, 不记录, 设置记录的时间阀值, 比如 1, 则表示超过1s的都记录
 	EnableSlowLog  float64
 	EnableErrorLog bool
@@ -104,18 +105,22 @@ func (l *Logger) Sql(sqlStr string, runtime time.Duration) {
 }
 
 // Error ...
-func (l *Logger) Error(msg string) {
+func (l *Logger) Error(msg string, sqlStr ...string) {
 	if l.EnableErrorLog() {
-		logger.write(LOG_ERROR, "gorose", msg, "0")
+		logger.write(LOG_ERROR, "gorose_err", msg, "0", sqlStr...)
 	}
 }
 
-func (l *Logger) write(ll LogLevel, filename string, msg string, runtime string) {
+func (l *Logger) write(ll LogLevel, filename string, msg string, runtime string, sqlStr ...string) {
 	now := time.Now()
 	date := now.Format("20060102")
 	datetime := now.Format("2006-01-02 15:04:05")
 	f := readFile(fmt.Sprintf("%s/%v_%v.log", l.filePath, date, filename))
-	content := fmt.Sprintf("[%v] [%v] %v --- %v\n", ll.String(), datetime, runtime, msg)
+	by := strings.Join(sqlStr, " | ")
+	if by != "" {
+		by = " " + by
+	}
+	content := fmt.Sprintf("[%v] [%v] %v --- %v%v\n", ll.String(), datetime, runtime, msg, by)
 	withLockContext(func() {
 		defer f.Close()
 		buf := []byte(content)

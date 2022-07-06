@@ -161,14 +161,14 @@ func (s *Session) Query(sqlstring string, args ...interface{}) (result []Data, e
 	}
 
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		return
 	}
 
 	defer stmt.Close()
 	rows, err := stmt.Query(args...)
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		return
 	}
 
@@ -177,7 +177,7 @@ func (s *Session) Query(sqlstring string, args ...interface{}) (result []Data, e
 
 	err = s.scan(rows)
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		return
 	}
 	//}, func(duration time.Duration) {
@@ -230,7 +230,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	}
 
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		return
 	}
 
@@ -238,7 +238,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	defer stmt.Close()
 	result, err := stmt.Exec(args...)
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		return
 	}
 
@@ -248,7 +248,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 		if err == nil {
 			s.lastInsertId = lastInsertId
 		} else {
-			s.GetIEngin().GetLogger().Error(err.Error())
+			s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		}
 	}
 	// get rows affected

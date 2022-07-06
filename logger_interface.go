@@ -1,20 +1,19 @@
 package gorose
 
 import (
-	"time"
 	"io"
+	"time"
 )
 
 // ILogger ...
 type ILogger interface {
 	Sql(sqlStr string, runtime time.Duration)
 	Slow(sqlStr string, runtime time.Duration)
-	Error(msg string)
+	Error(msg string, sqlStr ...string)
 	EnableSqlLog() bool
 	EnableErrorLog() bool
 	EnableSlowLog() float64
 }
-
 
 // 暂时规划
 type ilogger interface {
