@@ -118,7 +118,7 @@ func (l *Logger) write(ll LogLevel, filename string, msg string, runtime string,
 	f := readFile(fmt.Sprintf("%s/%v_%v.log", l.filePath, date, filename))
 	by := strings.Join(sqlStr, " | ")
 	if by != "" {
-		by = " " + by
+		by = " --- " + by
 	}
 	content := fmt.Sprintf("[%v] [%v] %v --- %v%v\n", ll.String(), datetime, runtime, msg, by)
 	withLockContext(func() {

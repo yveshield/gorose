@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gohouse/gorose/v2"
 	//_ "github.com/lib/pq"
 )
 
@@ -26,13 +25,13 @@ func main2() {
 		Where("uid", 4).BuildSql("update"))
 }
 
-func pgtest()  {
+func pgtest() {
 	dsn := "user=postgres dbname=postgres password=123456 sslmode=disable"
 	engin, err := gorose.Open(&gorose.Config{Driver: "postgres", Dsn: dsn})
 	if err != nil {
 		panic(err.Error())
 	}
 	var orm = engin.NewOrm()
-	res,p,err := orm.Table("users").Where("a",1).BuildSql()
-	fmt.Println(res,p, err)
+	res, p, err := orm.Table("users").Where("a", 1).BuildSql()
+	fmt.Println(res, p, err)
 }
