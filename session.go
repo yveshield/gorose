@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/gohouse/t"
@@ -19,6 +20,7 @@ type Session struct {
 	tx           *sql.Tx
 	slave        *sql.DB
 	lastInsertId int64
+	sessionId    uint64
 	sqlLogs      []string
 	lastSql      string
 	union        interface{}
@@ -28,9 +30,13 @@ type Session struct {
 
 var _ ISession = (*Session)(nil)
 
+var sessionId uint64 = 0
+
 // NewSession : 初始化 Session
 func NewSession(e IEngin) *Session {
 	var s = new(Session)
+	atomic.AddUint64(&sessionId, 1)
+	s.sessionId = atomic.LoadUint64(&sessionId)
 	s.IEngin = e
 	// 初始化 IBinder
 	s.SetIBinder(NewBinder())
@@ -44,6 +50,10 @@ func NewSession(e IEngin) *Session {
 func (s *Session) Close() {
 	s.master.Close()
 	s.slave.Close()
+}
+
+func (s *Session) GetSessionId() uint64 {
+	return s.sessionId
 }
 
 // GetIEngin 获取engin
@@ -190,9 +200,9 @@ func (s *Session) Query(sqlstring string, args ...interface{}) (result []Data, e
 
 	timeduration := time.Since(start)
 	//if timeduration.Seconds() > 1 {
-	s.GetIEngin().GetLogger().Slow(s.LastSql(), timeduration)
+	s.GetIEngin().GetLogger().Slow(s.GetSessionId(), s.LastSql(), timeduration)
 	//} else {
-	s.GetIEngin().GetLogger().Sql(s.LastSql(), timeduration)
+	s.GetIEngin().GetLogger().Sql(s.GetSessionId(), s.LastSql(), timeduration)
 	//}
 
 	result = s.GetIBinder().GetBindAll()
@@ -255,11 +265,11 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	rowsAffected, err = result.RowsAffected()
 	timeduration := time.Since(start)
 	//}, func(duration time.Duration) {
-	if timeduration.Seconds() > 1 {
-		s.GetIEngin().GetLogger().Slow(s.LastSql(), timeduration)
-	} else {
-		s.GetIEngin().GetLogger().Sql(s.LastSql(), timeduration)
-	}
+	//if timeduration.Seconds() > 1 {
+	s.GetIEngin().GetLogger().Slow(s.GetSessionId(), s.LastSql(), timeduration)
+	//} else {
+	s.GetIEngin().GetLogger().Sql(s.GetSessionId(), s.LastSql(), timeduration)
+	//}
 	//})
 	return
 }

@@ -91,15 +91,17 @@ func (l *Logger) EnableSlowLog() float64 {
 }
 
 // Slow ...
-func (l *Logger) Slow(sqlStr string, runtime time.Duration) {
+func (l *Logger) Slow(sessionId uint64, sqlStr string, runtime time.Duration) {
 	if l.EnableSlowLog() > 0 && runtime.Seconds() > l.EnableSlowLog() {
+		sqlStr = fmt.Sprintf("[%v] %v", sessionId, sqlStr)
 		logger.write(LOG_SLOW, "gorose_slow", sqlStr, runtime.String())
 	}
 }
 
 // Sql ...
-func (l *Logger) Sql(sqlStr string, runtime time.Duration) {
+func (l *Logger) Sql(sessionId uint64, sqlStr string, runtime time.Duration) {
 	if l.EnableSqlLog() {
+		sqlStr = fmt.Sprintf("[%v] %v", sessionId, sqlStr)
 		logger.write(LOG_SQL, "gorose_sql", sqlStr, runtime.String())
 	}
 }

@@ -7,8 +7,8 @@ import (
 
 // ILogger ...
 type ILogger interface {
-	Sql(sqlStr string, runtime time.Duration)
-	Slow(sqlStr string, runtime time.Duration)
+	Sql(sessionId uint64, sqlStr string, runtime time.Duration)
+	Slow(sessionId uint64, sqlStr string, runtime time.Duration)
 	Error(msg string, sqlStr ...string)
 	EnableSqlLog() bool
 	EnableErrorLog() bool
