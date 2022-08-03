@@ -254,9 +254,11 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 
 	if operType == "insert" {
 		// get last insert id
-		lastInsertId, err := result.LastInsertId()
+		var lastInsertId int64
+		lastInsertId, err = result.LastInsertId()
 		if err == nil {
 			s.lastInsertId = lastInsertId
+			s.lastSql = fmt.Sprintf("%v -> %v", s.LastSql(), lastInsertId)
 		} else {
 			s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
 		}
