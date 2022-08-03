@@ -265,6 +265,11 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	}
 	// get rows affected
 	rowsAffected, err = result.RowsAffected()
+	if err == nil {
+		if operType == "insert" || operType == "update" || operType == "delete" {
+			s.lastSql = fmt.Sprintf("%v = %v", s.LastSql(), rowsAffected)
+		}
+	}
 	timeduration := time.Since(start)
 	//}, func(duration time.Duration) {
 	//if timeduration.Seconds() > 1 {
