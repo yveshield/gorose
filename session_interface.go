@@ -12,6 +12,7 @@ type ISession interface {
 	Query(sqlstring string, args ...interface{}) ([]Data, error)
 	Execute(sqlstring string, args ...interface{}) (int64, error)
 	//GetDriver() string
+	GetSessionId() uint64
 	GetIEngin() IEngin
 	LastInsertId() int64
 	LastSql() string
