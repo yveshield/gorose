@@ -52,7 +52,8 @@ func TestOrm_BuildSql_where(t *testing.T) {
 	}
 
 	var db = DB()
-	a, b, err := db.Table(&u).Where("age", ">", 1).Where(func() {
+	a, b, err := db.Table(&u).Where("age", ">", 1).WhereIn("id", nil).OrWhereIn("ki", nil).
+		WhereNotIn("code", nil).OrWhereNotIn("barcode", nil).Where(func() {
 		db.Where("name", "like", "%fizz%").OrWhere(func() {
 			db.Where("age", ">", 10).Where("uid", ">", 2)
 		})

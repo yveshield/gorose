@@ -1,8 +1,10 @@
 package gorose
 
 import (
-	"github.com/gohouse/t"
+	"fmt"
 	"strings"
+
+	"github.com/gohouse/t"
 )
 
 // Orm ...
@@ -162,7 +164,7 @@ func (dba *Orm) Page(page int) IOrm {
 // Where : query or execute where condition, the relation is and
 func (dba *Orm) Where(args ...interface{}) IOrm {
 	if len(args) == 0 ||
-		t.New(args[0]).Bool() == false {
+		(t.New(args[0]).Bool() == false && strings.ToLower(fmt.Sprintf("%v", args[0])) != "false") {
 		return dba
 	}
 	// 如果只传入一个参数, 则可能是字符串、一维对象、二维数组
@@ -227,43 +229,57 @@ func (dba *Orm) OrWhereNotRegexp(arg string, expstr string) IOrm {
 }
 
 // WhereIn ...
-func (dba *Orm) WhereIn(needle string, hystack []interface{}) IOrm {
-	return dba.Where(needle, "IN", hystack)
+func (dba *Orm) WhereIn(needle string, haystack []interface{}) IOrm {
+	// IN nil => false
+	if len(haystack) == 0 {
+		return dba.Where("false")
+	}
+	return dba.Where(needle, "IN", haystack)
 }
 
 // OrWhereIn ...
-func (dba *Orm) OrWhereIn(needle string, hystack []interface{}) IOrm {
-	return dba.OrWhere(needle, "IN", hystack)
+func (dba *Orm) OrWhereIn(needle string, haystack []interface{}) IOrm {
+	if len(haystack) == 0 {
+		return dba.OrWhere("false")
+	}
+	return dba.OrWhere(needle, "IN", haystack)
 }
 
 // WhereNotIn ...
-func (dba *Orm) WhereNotIn(needle string, hystack []interface{}) IOrm {
-	return dba.Where(needle, "NOT IN", hystack)
+func (dba *Orm) WhereNotIn(needle string, haystack []interface{}) IOrm {
+	// NOT IN nil => true
+	if len(haystack) == 0 {
+		return dba.Where("true")
+	}
+	return dba.Where(needle, "NOT IN", haystack)
 }
 
 // OrWhereNotIn ...
-func (dba *Orm) OrWhereNotIn(needle string, hystack []interface{}) IOrm {
-	return dba.OrWhere(needle, "NOT IN", hystack)
+func (dba *Orm) OrWhereNotIn(needle string, haystack []interface{}) IOrm {
+	if len(haystack) == 0 {
+		return dba.OrWhere("true")
+	}
+	return dba.OrWhere(needle, "NOT IN", haystack)
 }
 
 // WhereBetween ...
-func (dba *Orm) WhereBetween(needle string, hystack []interface{}) IOrm {
-	return dba.Where(needle, "BETWEEN", hystack)
+func (dba *Orm) WhereBetween(needle string, haystack []interface{}) IOrm {
+	return dba.Where(needle, "BETWEEN", haystack)
 }
 
 // OrWhereBetween ...
-func (dba *Orm) OrWhereBetween(needle string, hystack []interface{}) IOrm {
-	return dba.OrWhere(needle, "BETWEEN", hystack)
+func (dba *Orm) OrWhereBetween(needle string, haystack []interface{}) IOrm {
+	return dba.OrWhere(needle, "BETWEEN", haystack)
 }
 
 // WhereNotBetween ...
-func (dba *Orm) WhereNotBetween(needle string, hystack []interface{}) IOrm {
-	return dba.Where(needle, "NOT BETWEEN", hystack)
+func (dba *Orm) WhereNotBetween(needle string, haystack []interface{}) IOrm {
+	return dba.Where(needle, "NOT BETWEEN", haystack)
 }
 
 // OrWhereNotBetween ...
-func (dba *Orm) OrWhereNotBetween(needle string, hystack []interface{}) IOrm {
-	return dba.OrWhere(needle, "NOT BETWEEN", hystack)
+func (dba *Orm) OrWhereNotBetween(needle string, haystack []interface{}) IOrm {
+	return dba.OrWhere(needle, "NOT BETWEEN", haystack)
 }
 
 // Join : select join query
