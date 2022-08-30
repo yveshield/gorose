@@ -347,7 +347,7 @@ func (dba *Orm) BuildSql(operType ...string) (a string, b []interface{}, err err
 	// 解析table
 	dba.table, err = dba.GetISession().GetTableName()
 	if err != nil {
-		dba.GetISession().GetIEngin().GetLogger().Error(err.Error())
+		dba.GetISession().GetIEngin().GetLogger().Error(dba.GetSessionId(), err.Error())
 		return
 	}
 	// 解析字段
@@ -387,14 +387,14 @@ func (dba *Orm) BuildSql(operType ...string) (a string, b []interface{}, err err
 func (dba *Orm) Transaction(closers ...func(db IOrm) error) (err error) {
 	err = dba.ISession.Begin()
 	if err != nil {
-		dba.GetIEngin().GetLogger().Error(err.Error())
+		dba.GetIEngin().GetLogger().Error(dba.GetSessionId(), err.Error())
 		return err
 	}
 
 	for _, closer := range closers {
 		err = closer(dba)
 		if err != nil {
-			dba.GetIEngin().GetLogger().Error(err.Error())
+			dba.GetIEngin().GetLogger().Error(dba.GetSessionId(), err.Error())
 			_ = dba.ISession.Rollback()
 			return
 		}

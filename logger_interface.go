@@ -9,7 +9,7 @@ import (
 type ILogger interface {
 	Sql(sessionId uint64, sqlStr string, runtime time.Duration)
 	Slow(sessionId uint64, sqlStr string, runtime time.Duration)
-	Error(msg string, sqlStr ...string)
+	Error(sessionId uint64, msg string, sqlStr ...string)
 	EnableSqlLog() bool
 	EnableErrorLog() bool
 	EnableSlowLog() float64

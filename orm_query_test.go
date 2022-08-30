@@ -32,7 +32,7 @@ func TestOrm_BuildSql4(t *testing.T) {
 	//var wheres interface{}
 	//wheres = [][]interface{}{{"a", ">", "b"},{"lock",1}}
 
-	wheres := Data{"lock": 1,"`date`": 1}
+	wheres := Data{"lock": 1, "`date`": 1}
 	obj := db.Table(Users{}).Where(wheres).Where(func() {
 		db.Where("c", 2).OrWhere("lock", ">", 4)
 	}).Data(wheres)
@@ -150,8 +150,8 @@ func TestOrm_Get2(t *testing.T) {
 	var u []Users2
 
 	res, err := db.Table("users").Where("uid", ">", 2).
-		Where("1","=","1").
-		//Where("1 = 1").
+		//Where("1","=","1").
+		Where("true").
 		Limit(2).Get()
 	//res, err := db.Table(&u).Where("uid", ">", 0).Limit(2).Get()
 	fmt.Println(db.LastSql())

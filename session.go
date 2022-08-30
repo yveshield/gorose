@@ -132,14 +132,14 @@ func (s *Session) Commit() (err error) {
 func (s *Session) Transaction(closers ...func(ses ISession) error) (err error) {
 	err = s.Begin()
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 		return err
 	}
 
 	for _, closer := range closers {
 		err = closer(s)
 		if err != nil {
-			s.GetIEngin().GetLogger().Error(err.Error())
+			s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 			_ = s.Rollback()
 			return
 		}
@@ -154,7 +154,7 @@ func (s *Session) Query(sqlstring string, args ...interface{}) (result []Data, e
 	//withRunTimeContext(func() {
 	if s.err != nil {
 		err = s.err
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 	}
 	// 记录sqlLog
 	s.lastSql = fmt.Sprint(sqlstring, ", ", args)
@@ -171,14 +171,14 @@ func (s *Session) Query(sqlstring string, args ...interface{}) (result []Data, e
 	}
 
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error(), s.LastSql())
 		return
 	}
 
 	defer stmt.Close()
 	rows, err := stmt.Query(args...)
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error(), s.LastSql())
 		return
 	}
 
@@ -187,7 +187,7 @@ func (s *Session) Query(sqlstring string, args ...interface{}) (result []Data, e
 
 	err = s.scan(rows)
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error(), s.LastSql())
 		return
 	}
 	//}, func(duration time.Duration) {
@@ -216,7 +216,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	//withRunTimeContext(func() {
 	//	err = s.GetIBinder().BindParse(s.GetIEngin().GetPrefix())
 	if s.err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 		return
 	}
 	s.lastSql = fmt.Sprint(sqlstring, ", ", args)
@@ -227,7 +227,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 
 	var operType = strings.ToLower(sqlstring[0:6])
 	if operType == "select" {
-		s.GetIEngin().GetLogger().Error(err.Error())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 		err = errors.New("Execute does not allow select operations, please use Query")
 		return
 	}
@@ -240,7 +240,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	}
 
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error(), s.LastSql())
 		return
 	}
 
@@ -248,7 +248,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 	defer stmt.Close()
 	result, err := stmt.Exec(args...)
 	if err != nil {
-		s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
+		s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error(), s.LastSql())
 		return
 	}
 
@@ -260,7 +260,7 @@ func (s *Session) Execute(sqlstring string, args ...interface{}) (rowsAffected i
 			s.lastInsertId = lastInsertId
 			s.lastSql = fmt.Sprintf("%v -> %v", s.LastSql(), lastInsertId)
 		} else {
-			s.GetIEngin().GetLogger().Error(err.Error(), s.LastSql())
+			s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error(), s.LastSql())
 		}
 	}
 	// get rows affected
@@ -408,7 +408,7 @@ func (s *Session) scanStructAll(rows *sql.Rows) error {
 			var union interface{}
 			err := rows.Scan(&union)
 			if err != nil {
-				s.GetIEngin().GetLogger().Error(err.Error())
+				s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 				return err
 			}
 			s.union = union
@@ -418,7 +418,7 @@ func (s *Session) scanStructAll(rows *sql.Rows) error {
 		//fmt.Printf("%#v \n",structForScan(s.GetBindResult()))
 		err := rows.Scan(sfs...)
 		if err != nil {
-			s.GetIEngin().GetLogger().Error(err.Error())
+			s.GetIEngin().GetLogger().Error(s.GetSessionId(), err.Error())
 			return err
 		}
 		// 如果是union操作就不需要绑定数据直接返回, 否则就绑定数据

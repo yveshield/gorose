@@ -3,11 +3,12 @@ package gorose
 import (
 	"errors"
 	"fmt"
-	"github.com/gohouse/golib/structEngin"
-	"github.com/gohouse/t"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/gohouse/golib/structEngin"
+	"github.com/gohouse/t"
 )
 
 var operator = []string{"=", ">", "<", "!=", "<>", ">=", "<=", "like", "not like",
@@ -20,11 +21,11 @@ type BuilderDefault struct {
 	placeholder int
 	driver      string
 	bindValues  []interface{}
-	current IBuilder
+	current     IBuilder
 }
 
 // NewBuilderDefault 初始化
-func NewBuilderDefault(o IOrm,current IBuilder) *BuilderDefault {
+func NewBuilderDefault(o IOrm, current IBuilder) *BuilderDefault {
 	//onceBuilderDefault.Do(func() {
 	//	builderDefault = new(BuilderDefault)
 	//	builderDefault.operator = operator
@@ -79,12 +80,12 @@ func (b *BuilderDefault) BuildQuery() (sqlStr string, args []interface{}, err er
 	//b.IOrm = o
 	join, err := b.BuildJoin()
 	if err != nil {
-		b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+		b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 		return
 	}
 	where, err := b.BuildWhere()
 	if err != nil {
-		b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+		b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 		return
 	}
 	sqlStr = fmt.Sprintf("SELECT %s%s FROM %s%s%s%s%s%s%s%s",
@@ -106,7 +107,7 @@ func (b *BuilderDefault) BuildExecute(operType string) (sqlStr string, args []in
 	if operType != "delete" {
 		if b.IOrm.GetData() == nil {
 			err = errors.New("insert,update请传入数据操作")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 		update, insertkey, insertval = b.BuildData(operType)
@@ -123,12 +124,12 @@ func (b *BuilderDefault) BuildExecute(operType string) (sqlStr string, args []in
 	case "update":
 		where, err = b.BuildWhere()
 		if err != nil {
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 		if where == "" && b.IOrm.GetForce() == false {
 			err = errors.New("出于安全考虑, update时where条件不能为空, 如果真的不需要where条件, 请使用Force()(如: db.xxx.Force().Update())")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 		sqlStr = fmt.Sprintf("UPDATE %s SET %s%s", b.BuildTable(), update, where)
@@ -136,12 +137,12 @@ func (b *BuilderDefault) BuildExecute(operType string) (sqlStr string, args []in
 
 		where, err = b.BuildWhere()
 		if err != nil {
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 		if where == "" && b.IOrm.GetForce() == false {
 			err = errors.New("出于安全考虑, delete时where条件不能为空, 如果真的不需要where条件, 请使用Force()(如: db.xxx.Force().Delete())")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 		sqlStr = fmt.Sprintf("DELETE FROM %s%s", b.BuildTable(), where)
@@ -296,7 +297,7 @@ func (b *BuilderDefault) parseData(operType string, data []map[string]interface{
 		insertValues = append(insertValues, "("+strings.Join(insertValuesSub, ",")+")")
 	}
 	var tmpInsertFields = insertFields[:0]
-	for _,v := range insertFields {
+	for _, v := range insertFields {
 		tmpInsertFields = append(tmpInsertFields, b.current.AddFieldQuotes(v))
 	}
 	return strings.Join(dataObj, ","), strings.Join(tmpInsertFields, ","), strings.Join(insertValues, ",")
@@ -317,14 +318,14 @@ func (b *BuilderDefault) BuildJoin() (s string, err error) {
 
 		if len(join) != 2 {
 			err = errors.New("join conditions are wrong")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 
 		// 获取真正的用户传入的join参数
 		if args, ok = join[1].([]interface{}); !ok {
 			err = errors.New("join conditions are wrong")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 
@@ -354,7 +355,7 @@ func (b *BuilderDefault) BuildJoin() (s string, err error) {
 			w = fmt.Sprintf("%s%s ON %s %s %s", prefix, args[0], args[1], args[2], args[3])
 		default:
 			err = errors.New("join format error")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 
@@ -517,7 +518,7 @@ func (b *BuilderDefault) parseWhere(ormApi IOrm) (string, error) {
 				// 再解析一遍后来嵌套进去的where
 				wherenested, err := b.parseWhere(ormApi)
 				if err != nil {
-					b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+					b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 					return "", err
 				}
 				// 嵌套的where放入一个括号内
@@ -557,7 +558,7 @@ func (b *BuilderDefault) parseParams(args []interface{}, ormApi IOrm) (s string,
 		//if !inArray(argsReal[1], b.GetRegex()) {
 		if !inArray(argsReal[1], b.GetOperator()) {
 			err = errors.New("where parameter is wrong")
-			b.IOrm.GetISession().GetIEngin().GetLogger().Error(err.Error())
+			b.IOrm.GetISession().GetIEngin().GetLogger().Error(b.IOrm.GetISession().GetSessionId(), err.Error())
 			return
 		}
 

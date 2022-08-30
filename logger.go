@@ -107,8 +107,9 @@ func (l *Logger) Sql(sessionId uint64, sqlStr string, runtime time.Duration) {
 }
 
 // Error ...
-func (l *Logger) Error(msg string, sqlStr ...string) {
+func (l *Logger) Error(sessionId uint64, msg string, sqlStr ...string) {
 	if l.EnableErrorLog() {
+		msg = fmt.Sprintf("[%v] %v", sessionId, msg)
 		logger.write(LOG_ERROR, "gorose_err", msg, "0", sqlStr...)
 	}
 }

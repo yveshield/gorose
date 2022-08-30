@@ -29,7 +29,7 @@ func Open(conf ...interface{}) (engin *Engin, err error) {
 	engin, err = NewEngin(conf...)
 	if err != nil {
 		if engin.GetLogger().EnableErrorLog() {
-			engin.GetLogger().Error(err.Error())
+			engin.GetLogger().Error(0, err.Error())
 		}
 		return
 	}
