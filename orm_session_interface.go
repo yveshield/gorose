@@ -1,10 +1,16 @@
 package gorose
 
+import (
+	"context"
+	"database/sql"
+)
+
 // IOrmSession ...
 type IOrmSession interface {
 	//Close()
 	//Table(bind interface{}) IOrm
 	//Bind(bind interface{}) ISession
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (err error)
 	Begin() (err error)
 	Rollback() (err error)
 	Commit() (err error)

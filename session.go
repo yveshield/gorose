@@ -1,6 +1,7 @@
 package gorose
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -108,6 +109,13 @@ func (s *Session) GetTableName() (string, error) {
 // Begin ...
 func (s *Session) Begin() (err error) {
 	s.tx, err = s.master.Begin()
+	s.SetTransaction(true)
+	return
+}
+
+// BeginTx ...
+func (s *Session) BeginTx(ctx context.Context, opts *sql.TxOptions) (err error) {
+	s.tx, err = s.master.BeginTx(ctx, opts)
 	s.SetTransaction(true)
 	return
 }
